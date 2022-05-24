@@ -59,3 +59,26 @@ Factory.prototype = {
   Php: function () {},
   Jascript: function () {},
 }
+
+// 抽象类
+let Car = function () {}
+Car.prototype = {
+  getPrice: function () {
+    return new Error('抽象方法不能调用')
+  },
+  getSpeed: function () {
+    return new Error('抽象方法不能调用')
+  },
+}
+
+// 抽象工厂模式
+let ve = function(subtype, suptype){
+  if(typeof ve[suptype] === 'function'){
+    function F(){}
+    F.prototype = new ve[suptype]()
+    subtype.constructor = subtype
+    subtype.prototype = new F()
+  }else{
+    throw new Error('未创建抽象类')
+  }
+}
