@@ -316,3 +316,159 @@ decorator('tel_input', function () {
 decorator('email_input', function () {
   console.log('测试二下')
 })
+
+// 桥接模式
+let changeColorbg = function (dom, color, bg) {
+  dom.style.color = color
+  dom.style.background = bg
+}
+document.getElementsByTagName('div')[0].onmouseover = function () {
+  changeColorbg(this, '#333', '#f5f5f5')
+}
+let pspeed = function (x, y) {
+  this.x = this.xthis.y = y
+}
+pspeed.prototype.run = function () {
+  console.log('跑')
+}
+let pcolor = function (color) {
+  this.color = color
+}
+pcolor.prototype.draw = function () {
+  console.log('绘制')
+}
+let pspeek = function (word) {
+  this.word = word
+}
+pspeek.prototype.run = function () {
+  console.log('说话')
+}
+let Ball = function (x, y, color) {
+  this, (speed = new pspeed(x, y))
+  this.color = new pcolor(color)
+}
+Ball.prototype.init = function () {
+  this.color.draw()
+  this.speed.run()
+}
+let people = function (x, y, word) {
+  this.speed = new pspeed(x, y)
+  this.word = new pspeek(word)
+}
+people.prototype.init = function () {
+  this.speed.run()
+  this.word.run()
+}
+
+// 组合模式
+class CFolder {
+  constructor(name) {
+    this.name = name
+    this.files = []
+  }
+  add(file) {
+    this.files.push(file)
+  }
+  scan() {
+    this.files.forEach(f => {
+      f.scan()
+    })
+  }
+}
+class CFile {
+  constructor(name) {
+    this.name = name
+  }
+  add() {
+    throw new Error('不能添加文件')
+  }
+  scan() {
+    console.log('开始扫描文件:', this.name)
+  }
+}
+let mFolder = new CFolder('目录1')
+let mFolder1 = new CFolder('目录2')
+mFolder.add(new CFile('文件1'))
+mFolder1.add(new CFile('文件2'))
+mFolder.scan()
+mFolder1.scan()
+let znews = function () {
+  this.children = []
+  this.element = null
+}
+znews.prototype = {
+  init: function () {
+    throw new Error('重写方法')
+  },
+  add: function () {
+    throw new Error('重写方法')
+  },
+  getElement: function () {
+    throw new Error('重写方法')
+  },
+}
+let zcontainer = function (id, parent) {
+  znews.call(this)
+  this.id = id
+  this.parent = parent
+  this.init()
+}
+zcontainer.prototype = new znews()
+zcontainer.prototype.init = function () {
+  this.element = document.createElement('ul')
+  this.element.id = this.id
+}
+zcontainer.prototype.add = function (child) {
+  this.children.push(child)
+  this.element.appendChild(child.getElement())
+  return this
+}
+zcontainer.prototype.getElement = function () {
+  return this.element
+}
+zcontainer.prototype.show = function () {
+  this.parent.appendChild(this.element)
+}
+let zitem = function (id) {
+  znews.call(this)
+  this.id = id
+  this.init()
+}
+zitem.prototype = new znews()
+zitem.prototype.init = function () {
+  this.element = document.createElement('li')
+  this.element.id = this.id
+}
+zitem.prototype.add = function (child) {
+  this.children.push(child)
+  this.element.appendChild(child.getElement())
+  return this
+}
+zitem.prototype.getElement = function () {
+  return this.element
+}
+let znewsimg = function (url, text) {
+  znews.call(this)
+  this.url = url
+  this.text = text
+  this.init()
+}
+znewsimg.prototype = new znews()
+znewsimg.prototype.init = function () {
+  this.element = document.createElement('a')
+  this.element.innerHTML = this.text
+  this.element.href = this.href
+}
+znewsimg.prototype.add = function (child) {
+  this.children.push(child)
+  this.element.appendChild(child.getElement())
+  return this
+}
+znewsimg.prototype.getElement = function () {
+  return this.element
+}
+let nnewc = new zcontainer('news_ul', document.body)
+nnewc
+  .add(new zitem('nomal').add(new znewsimg('123', '333')))
+  .add(new zitem('normal2').add(new znewsimg('1231', '66')))
+  .show()
