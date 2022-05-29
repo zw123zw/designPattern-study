@@ -214,19 +214,105 @@ let AUitl = (function () {
   }
 })()
 console.log(AUitl.static.getMax())
-let lazySingle = (function(){
+let lazySingle = (function () {
   let instance = null
-  let Single = function(){
-    return{
-      publicM: function(){},
-      publicC:  123
+  let Single = function () {
+    return {
+      publicM: function () {},
+      publicC: 123,
     }
   }
-return function(){
-  if(!instance){
-    instance = Single()
+  return function () {
+    if (!instance) {
+      instance = Single()
+    }
+    return instance
   }
-  return instance
-}
 })()
-console.log(lazySingle().publicC);
+console.log(lazySingle().publicC)
+
+// 外观模式
+let addEvent = function (id, type, fn) {
+  let dom = document.getElementById(id)
+  if (dom.addEventListener) {
+    dom.addEventListener(type, fn, false)
+  } else if (dom.attachEvent) {
+    dom.attachEvent('on' + type, fn)
+  } else {
+    dom['on' + type] = fn
+  }
+}
+let getEvent = function (event) {
+  return event || window.event
+}
+let getTarget = function (e) {
+  return getEvent(e).target || getEvent(e).srcElement
+}
+let preventDefault = function (e) {
+  if (getEvent(e).preventDefault) {
+    getEvent(e).preventDefault()
+  } else {
+    e.returnValue = false
+  }
+}
+
+// 适配器模式
+let $ = (function () {
+  return function () {}
+})()
+let sa = {}
+sa.g = function (id) {
+  return $(id).get(0)
+}
+sa.on = function (id, type, fn) {
+  let dom = typeof id === 'string' ? $('#' + id) : $(id)
+  dom.on(type, fn)
+}
+let doSome = function (options) {
+  let _options = {
+    name: '123',
+    age: 123,
+    sex: 1,
+  }
+  Object.keys(_options).forEach(key => {
+    _options[key] = options[key] || _options[key]
+  })
+}
+
+// 代理模式
+let count = (function () {
+  let img = document.createElement('img')
+  return function () {
+    let str =
+      '//img1.2125.com/2017begin/img/h001/h25/img202004141526598c1790.jpg'
+    img.setAttribute('src', str)
+    document.body.append(img)
+  }
+})()
+count()
+
+// 装饰者模式
+let decorator = function (id, fn) {
+  let input = document.getElementById(id)
+  if (!input) {
+    let dom = document.createElement('div')
+    dom.innerHTML = '测试'
+    document.body.appendChild(dom)
+    input = dom
+  }
+  if (typeof input.onclick === 'function') {
+    let oldClick = input.onclick
+    input.onclick = function () {
+      oldClick()
+      fn()
+    }
+  } else {
+    input.onclick = fn
+  }
+}
+decorator('tel_input', function () {
+  console.log('测试一下')
+})
+decorator('email_input', function () {
+  console.log('测试二下')
+})
