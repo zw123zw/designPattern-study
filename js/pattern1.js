@@ -472,3 +472,28 @@ nnewc
   .add(new zitem('nomal').add(new znewsimg('123', '333')))
   .add(new zitem('normal2').add(new znewsimg('1231', '66')))
   .show()
+
+// 享元模式
+let flyweight = (function () {
+  const created = []
+  function create() {
+    let div = document.createElement('div')
+    document.getElementById('fly_container').appendChild(div)
+    created.push(div)
+    return div
+  }
+  return {
+    getDiv: function () {
+      if (created.length < 5) {
+        return create()
+      } else {
+        let div = created.shift()
+        created.push(div)
+        return div
+      }
+    },
+  }
+})()
+for (let i = 0; i < 5; i++) {
+  flyweight.getDiv().innerHTML = i
+}
