@@ -497,3 +497,43 @@ let flyweight = (function () {
 for (let i = 0; i < 5; i++) {
   flyweight.getDiv().innerHTML = i
 }
+
+// 模板方法模式
+let createAlert = function(data){
+  if(!data){
+    return
+  }
+  this.content = data.content
+  this.panel = document.createElement('div')
+  this.closeBtn = document.createElement('div')
+  this.panel.className = 'alert'
+  this.pconfirm = document.createElement('div')
+  this.pconfirm.innerHTML = data.confirm || '确认'
+}
+createAlert.prototype = {
+  init: function(){
+    this.panel.appendChild(this.pconfirm)
+    this.show()
+  },
+  show: function(){
+    this.panel.style.display = 'block'
+  },
+  bindEvent: function(){
+    this.closeBtn.onclick = function(){
+      this.hide()
+    }
+  }
+}
+let rughtAlert = function(data){
+  createAlert.call(this, data)
+  this.titleNode = data.titleNode
+}
+rughtAlert.prototype = new createAlert()
+rughtAlert.prototype.init = function(){
+  this.panel.insertBefore(this.titleNode)
+  createAlert.prototype.init.call(this)
+}
+rughtAlert.prototype.bindEvent = function(){
+  createAlert.prototype.bindEvent.call(this)
+  this.fail()
+}
