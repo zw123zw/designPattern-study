@@ -499,8 +499,8 @@ for (let i = 0; i < 5; i++) {
 }
 
 // 模板方法模式
-let createAlert = function(data){
-  if(!data){
+let createAlert = function (data) {
+  if (!data) {
     return
   }
   this.content = data.content
@@ -511,29 +511,172 @@ let createAlert = function(data){
   this.pconfirm.innerHTML = data.confirm || '确认'
 }
 createAlert.prototype = {
-  init: function(){
+  init: function () {
     this.panel.appendChild(this.pconfirm)
     this.show()
   },
-  show: function(){
+  show: function () {
     this.panel.style.display = 'block'
   },
-  bindEvent: function(){
-    this.closeBtn.onclick = function(){
+  bindEvent: function () {
+    this.closeBtn.onclick = function () {
       this.hide()
     }
-  }
+  },
 }
-let rughtAlert = function(data){
+let rughtAlert = function (data) {
   createAlert.call(this, data)
   this.titleNode = data.titleNode
 }
 rughtAlert.prototype = new createAlert()
-rughtAlert.prototype.init = function(){
+rughtAlert.prototype.init = function () {
   this.panel.insertBefore(this.titleNode)
   createAlert.prototype.init.call(this)
 }
-rughtAlert.prototype.bindEvent = function(){
+rughtAlert.prototype.bindEvent = function () {
   createAlert.prototype.bindEvent.call(this)
   this.fail()
+}
+
+// 观察者模式
+let Observer = (function () {
+  let _message = {}
+  return {
+    regist: function (type, fn) {
+      _message[type] =
+        typeof _message[type] === 'undefined' ? [fn] : _message[type].push(fn)
+    },
+    fire: function (type, args) {
+      if (!_message[type]) {
+        return
+      }
+      _message[type].forEach(fn => {
+        fn.call(this, { type, args })
+      })
+    },
+    remove: function (type, fn) {
+      if (_message[type] instanceof Array) {
+        _message[type].forEach((fn, index) => {
+          _message[type].splice(index, 1)
+        })
+      }
+    },
+  }
+})()
+
+Observer.regist('test', function (e) {
+  console.log(e)
+})
+Observer.fire('test', { msg: 123 })
+
+// 状态模式
+let resultState = (function () {
+  let states = {
+    state0: function () {},
+    state1: function () {},
+    state2: function () {},
+    state3: function () {
+      console.log('state3state3state3')
+    },
+    state4: function () {},
+  }
+  let show = function (res) {
+    return states['state' + res] && states['state' + res]()
+  }
+  return {
+    show,
+  }
+})()
+resultState.show(3)
+let marryState = (function () {
+  let _current = {}
+  let states = {
+    jump: function () {
+      console.log('跳跃')
+    },
+    move: function () {
+      console.log('移动')
+    },
+    shoot: function () {
+      console.log('射击')
+    },
+    squat: function () {
+      console.log('蹲下')
+    },
+  }
+  let Actons = {
+    changeState: function () {
+      let arg = arguments
+      _current = {}
+      for (const item of arg) {
+        _current[item] = true
+      }
+      return this
+    },
+    goes: function () {
+      Object.keys(_current).forEach(key => {
+        states[key] && states[key]()
+      })
+      return this
+    },
+  }
+  return Actons
+})()
+marryState
+  .changeState('jump', 'shoot')
+  .goes()
+  .changeState('move')
+  .goes()
+  .changeState('squat', 'move', 'jump')
+  .goes()
+
+// 策略模式
+let priceSt = (function () {
+  let st = {
+    return30: function () {
+      console.log('3折')
+    },
+    return30: function () {
+      console.log('3折')
+    },
+    return30: function () {
+      console.log('3折')
+    },
+    return30: function () {
+      console.log('3折')
+    },
+  }
+
+  return function (alporitem, price) {
+    return st[alporitem](price)
+  }
+})()
+
+// 职责链模式
+let sendData = function (data, dataType, dom) {
+  let xhr = new XMLHttpRequest()
+  let url = 'getData.php?mod=userInfo'
+  xhr.onload = function (event) {
+    if (xhr.status >= 200 && xhr.status < 300) {
+      dealData(xhr.responseText, dataType, dom)
+    }
+  }
+  xhr.open('get', url, true)
+  xhr.send()
+}
+let dealData = function (data, dataType, dom) {
+  switch (dataType) {
+    case 'sug':
+      return createSug(data, dom)
+    case 'val':
+      return createVal(data, dom)
+    default:
+      break
+  }
+}
+let createSug = function (data, dom) {
+  dom.parent.getElementsByTagName('ul')[0].innerHTML = data
+}
+let createVal = function (data, dom) {
+  dom.parent.getElementsByTagName('ul')[0].innerHTML = data
 }
