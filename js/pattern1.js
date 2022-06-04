@@ -680,3 +680,138 @@ let createSug = function (data, dom) {
 let createVal = function (data, dom) {
   dom.parent.getElementsByTagName('ul')[0].innerHTML = data
 }
+
+// 命令模式
+let viewCommand = (function () {
+  let _html = ''
+  let Actions = {
+    create: function (data, view) {
+      data += data[view]
+    },
+    display: function (container, data, view) {
+      if (data) {
+        this.create(data, view)
+      }
+      document.getElementById(container).innerHTML = _html
+      _html = ''
+    },
+  }
+  return function excute(msg) {
+    Actions[msg.command].call(Actions, msg.param)
+  }
+})()
+viewCommand({
+  command: 'create',
+  param: {
+    data: 132,
+    view: 321,
+  },
+})
+
+// 访问者模式
+let bindEvent = function (dom, type, fn) {
+  dom.attachEvent('on' + type, fn)
+}
+let bindEventIE = function (dom, type, fn, data) {
+  dom.attachEvent('on' + type, function (e) {
+    fn.call(dom, e, data)
+  })
+}
+let Visitor = (function () {
+  return {
+    splice: function () {
+      let args = Array.prototype.splice.call(arguments, 1)
+      return Array.prototype.splice.apply(arguments[0], args)
+    },
+    pop: function () {
+      return Array.prototype.pop.apply(arguments[0])
+    },
+  }
+})()
+
+// 中介者模式
+let Mediator = (function () {
+  let _msg = {}
+  return {
+    register: function (type, actios) {
+      if (typeof _msg[type] !== 'undefined') {
+        _msg[type].push(actios)
+      } else {
+        _msg[type] = [actios]
+      }
+    },
+    send: function (type) {
+      _msg[type].forEach(item => {
+        item && item()
+      })
+    },
+  }
+})()
+Mediator.register('demo', function () {
+  console.log('11')
+})
+Mediator.register('demo', function () {
+  console.log('22')
+})
+Mediator.send('demo')
+
+// 备忘录模式
+let PageUp = (function () {
+  let cache = {}
+  let showPage = function (page, data) {
+    console.log(page, data)
+  }
+  return function (page, fn) {
+    if (cache[page]) {
+      showPage(page, cache[page])
+      fn && fn()
+    } else {
+      // 请求
+      let data = [1, 2, 3]
+      cache[page] = data
+      showPage(page, cache[page])
+      fn && fn()
+    }
+  }
+})()
+PageUp(1, () => {
+  console.log(11111)
+})
+
+// 迭代器模式
+let iteror = function (items, container) {
+  let container = container && document.getElementById(container)
+  let items = container.getElementsByTagName(items)
+  let length = items.length
+  let index = 0
+  return {
+    first: function () {
+      index = 0
+      return item[index]
+    },
+    seconde: function () {
+      index = length
+      return item[index]
+    },
+    pre: function () {
+      if (--index > 0) {
+        return items[index]
+      } else {
+        index = 0
+        return null
+      }
+    },
+    next: function () {
+      if (++index < length) {
+        return items[index]
+      } else {
+        index = length - 1
+        return null
+      }
+    },
+    get: function (num) {
+      index = num
+      return items[num]
+    },
+  }
+}
